@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Crear Articulo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+</head>
+<body>
+<header>
+    <a href="/">
+        <h1 class="text-center" style="background-color: #007BFF; color: white; margin-bottom: 0">Blog</h1>
+    </a>
+    <nav class="navbar navbar-expand navbar-primary navbar-dark">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>            <!--/*@thymesVar id="sesionActiva" type=""*/-->
+
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/" class="nav-link">Inicio</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<article>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Crear Articulo</h3>
+            </div>
+            <div class="card-body">
+                <form action="/articulo/crear" method="post">
+                    <div class="form-group">
+                        <label for="titulo">Titulo</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cuerpo">Cuerpo</label>
+                        <textarea class="form-control" id="cuerpo" name="cuerpo" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="etiquetasExistentes">Etiquetas existentes</label>
+                        <select multiple class="form-control" id="etiquetasExistentes" name="etiquetasExistentes">
+                            <option th:each="etiqueta : ${etiquetas}" th:value="${etiqueta.id}" th:text="${etiqueta.etiqueta}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="nuevasEtiquetas">Nuevas etiquetas</label>
+                        <input type="text" class="form-control" id="nuevasEtiquetas" name="nuevasEtiquetas">
+                        <small id="etiquetasHelp" class="form-text text-muted">Separar las etiquetas con comas.</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                        <div class="col-4">
+                            <a href="/">
+                                <button type="button" class="btn btn-block btn-danger">Cancelar</button>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</article>
+</body>
+</html>
