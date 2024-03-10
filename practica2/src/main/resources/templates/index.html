@@ -86,6 +86,7 @@
                 </div>
             </div>
         </section>
+        <!--       Espacio a Trabajar -->
         <section class="d-flex flex-column justify-content-center align-items-center gap-4">
             <div class="card" style="width: 17rem; margin: 20px auto;">
                 <div class="card-header">
@@ -96,11 +97,28 @@
                         <label for="username">Your Name:</label>
                         <input type="text" id="username" name="username" placeholder="Enter your name">
                         <br>
-                        <button type="submit" id="start-chat" disabled>Start Chat</button>
+                        <label for="chat-select">Choose a Chat:</label>
+                        <select id="chat-select">
+                            <option th:each="chat : ${chats}" th:value="${chat.id}" th:text="${chat.name}"></option>
+                        </select>
+                        <br>
+                        <a href="#" id="start-chat" class="btn btn-primary">Start Chat</a>
+                        <a href="#" id="new-chat" class="btn btn-primary">New Chat</a>
+                        <div class="chat-messages" id="chat-messages">
+                            <!-- Aquí se mostrarán los mensajes del chat -->
+
+                        </div>
+                        <br>
+                        <!-- Área para escribir un nuevo mensaje -->
+                        <label for="message">Message:</label>
+                        <textarea id="message" name="message" rows="3" placeholder="Enter your message"></textarea>
+                        <br>
+                        <button type="button" id="send-message">Send Message</button>
                     </form>
                 </div>
             </div>
-            </section>
+        </section>
+<!--     Espacio a trabajar-->
 
     </div>
 </div>
@@ -111,5 +129,27 @@
     </span>
     <a href="#" th:if="${currentPage < totalPages}" th:href="@{/{page}(page=${currentPage + 1})}">Next</a>
 </div>
+    <script>
+    // Función para mostrar mensajes en el área de mensajes del chat
+    function displayMessage(message) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.textContent = message;
+        chatMessages.appendChild(messageElement);
+    }
+
+    // Evento click para el botón de enviar mensaje
+    document.getElementById('send-message').addEventListener('click', function() {
+        const messageInput = document.getElementById('message');
+        const message = messageInput.value;
+        if (message.trim() !== '') {
+            // Aquí deberías enviar el mensaje al backend y actualizar la interfaz con el mensaje enviado
+            displayMessage(message);
+            messageInput.value = ''; // Limpiar el área de mensaje después de enviar el mensaje
+        } else {
+            alert('Please enter a message.'); // Mostrar una alerta si el área de mensaje está vacía
+        }
+    });
+</script>    
 </body>
 </html>
