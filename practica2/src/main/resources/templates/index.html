@@ -47,6 +47,19 @@
                 <img th:if="${session.username.foto != null}" th:src="@{'data:' + ${session.username.foto.mimeType} + ';base64,' + ${session.username.foto.fotoBase64}}" width="30" height="30" class="d-inline-block align-top" alt="">
                 <span th:text="${session.username.username}"></span>
             </li>
+             <li class="nav-item d-none d-sm-inline-block">
+                        <a class="nav-link" href="#" role="button" aria-haspopup="true" aria-expanded="false" onclick="toggleDropdown()">Chats</a>
+                        <!-- Iteración de opciones de chat dentro del menú desplegable -->
+                        <div id="dropdownMenu" style="display: none;">
+                            <div th:each="chat : ${chats}">
+                                <a class="dropdown-item" href="#" th:text="${chat.name}" th:value="${chat.id}"></a>
+                                <select id="chat-select" style="width: 300px;">
+                                    <!-- Agregamos un margen inferior -->
+                                    <option th:each="chat : ${chats}" th:value="${chat.id}" th:text="${chat.name}"></option>
+                                </select>
+                            </div>
+                        </div>
+                </li>
         </ul>
     </nav>
 </header>
@@ -150,6 +163,16 @@
             alert('Please enter a message.'); // Mostrar una alerta si el área de mensaje está vacía
         }
     });
-</script>    
+</script>
+<script>
+    function toggleDropdown() {
+        var dropdownMenu = document.getElementById('dropdownMenu');
+        if (dropdownMenu.style.display === 'none') {
+            dropdownMenu.style.display = 'block';
+        } else {
+            dropdownMenu.style.display = 'none';
+        }
+    }
+</script>
 </body>
 </html>
