@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!--/*@thymesVar id="titulo" type=""*/-->
+    <title th:text="${titulo}">Login</title>
+</head>
+<body class="login-page" style="min-height: 466px;" cz-shortcut-listen="true">
+<h2>Login</h2>
+<div class="login-box">
+    <div class="card card-outline card-primary">
+        <div class="card-header text-center">
+            <a href="/public" class="h1"><b>Blog</b></a>
+        </div>
+        <div class="card-body">
+            <p class="login-box-msg">¿Esta seguro?</p>
+            <form action="/user/close" method="post">
+                <div class="row">
+                    <div class="col-8">
+                        <button type="submit" class="btn btn-block btn-primary">Confirmar</button>
+                    </div>
+                    <div class="col-4">
+                        <a href="/public">
+                            <button type="button" class="btn btn-block btn-danger">Cancelar</button>
+                        </a>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
