@@ -5,7 +5,6 @@ import io.javalin.rendering.JavalinRenderer;
 import io.javalin.rendering.template.JavalinThymeleaf;
 import org.example.Entidades.Usuario;
 import org.example.Servicios.ArticleServices;
-import org.example.Servicios.Blog;
 import org.example.Entidades.Articulo;
 import org.example.Entidades.Etiqueta;
 import org.example.Servicios.EtiquetaServices;
@@ -47,7 +46,7 @@ public class HomeController extends BaseController{
             model.put("totalPages", totalPages);
             model.put("currentPage", page);
             model.put("etiquetas", etiquetas);
-            ctx.render("/templates/index.html", model);
+            ctx.render("/public/templates/index.html", model);
         });
 
         app.get("/{tag}/{page}", ctx -> {
@@ -63,7 +62,7 @@ public class HomeController extends BaseController{
             model.put("totalPages", totalPages);
             model.put("currentPage", page);
             model.put("etiquetas", etiquetas);
-            ctx.render("/templates/index.html", model);
+            ctx.render("/public/templates/index.html", model);
         });
     }
 }

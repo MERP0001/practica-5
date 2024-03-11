@@ -28,7 +28,7 @@ public class ArticleServices extends DataBaseServices<Articulo>{
 
     public List<Articulo> findAllRecent() {
         EntityManager em = getEntityManager();
-        TypedQuery<Articulo> query = em.createQuery("SELECT a FROM Articulo a JOIN FETCH a.listaEtiquetas ORDER BY a.fecha DESC", Articulo.class);
+        TypedQuery<Articulo> query = em.createQuery("SELECT a FROM Articulo a ORDER BY a.fecha DESC", Articulo.class);
         List<Articulo> lista = query.getResultList();
         em.close();
         return lista;
@@ -40,10 +40,14 @@ public class ArticleServices extends DataBaseServices<Articulo>{
         }
         EntityManager em = getEntityManager();
         try{
-            TypedQuery<Articulo> query = em.createQuery("SELECT a FROM Articulo a JOIN FETCH a.listaEtiquetas ORDER BY a.fecha DESC", Articulo.class);
-            query.setFirstResult((pageNumber - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
+            TypedQuery<Articulo> query = em.createQuery("SELECT a FROM Articulo a ORDER BY a.fecha DESC", Articulo.class);
+            //query.setFirstResult((pageNumber - 1) * pageSize);
+            //query.setMaxResults(pageSize);
+            var lista = query.getResultList();
+            for(Articulo a : lista){
+                a.getListaEtiquetas().size();
+            }
+            return lista;
         } finally {
             em.close();
         }
@@ -77,7 +81,7 @@ public class ArticleServices extends DataBaseServices<Articulo>{
     public Articulo buscar(long id) {
         EntityManager em = getEntityManager();
         try{
-            TypedQuery<Articulo> query = em.createQuery("SELECT a FROM Articulo a JOIN FETCH a.listaEtiquetas WHERE a.id = :id", Articulo.class);
+            TypedQuery<Articulo> query = em.createQuery("SELECT a FROM Articulo a WHERE a.id = :id", Articulo.class);
             query.setParameter("id", id);
             Articulo articulo = query.getSingleResult();
             return articulo;

@@ -1,107 +1,105 @@
 package org.example.Controladores;
+
 import io.javalin.Javalin;
-import io.javalin.http.sse.SseClient;
+import io.javalin.rendering.JavalinRenderer;
+import io.javalin.rendering.template.JavalinThymeleaf;
 import org.eclipse.jetty.websocket.api.Session;
+import org.example.Entidades.Chat;
+import org.example.Entidades.Mensaje;
 import org.example.Entidades.Usuario;
+import org.example.Servicios.ChatServices;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class ChatController  extends BaseController{
-    public static List<Session> usuariosConectados = new ArrayList<>();
-    public static List<SseClient> listaSseUsuario = new ArrayList<>();
-    public ChatController(Javalin app) {
+public class ChatController extends BaseController{
+
+    private final List<Session> conectedUsers;
+
+    public ChatController(Javalin app, List<Session> conectedUsers) {
         super(app);
+        this.conectedUsers = conectedUsers;
+        registerTemplates();
     }
 
+    public void registerTemplates(){
+        JavalinRenderer.register(new JavalinThymeleaf(), ".html");
+    }
+
+    @Override
     public void aplicarRutas() {
-        app.get("/enviarMensaje", ctx -> {
-            System.out.println("Se APLICA EN EL CHAT");
+/*
+        app.before("/chats", ctx -> {
             Usuario usuario = ctx.sessionAttribute("username");
-            String mensaje = ctx.queryParam("mensaje");
-            enviarMensajeAClientesConectados(mensaje, usuario);
-            ctx.result("Enviando mensaje: "+mensaje);
+            if (usuario == null) {
+                ctx.redirect("/user/login");
+            }
+        });
+ */
+        app.get("/chats", ctx -> {
+            List<Chat> chats = ChatServices.getInstance().getChats();
+            Map<String, Object> model = new HashMap<>();
+            model.put("chats", chats);
+            ctx.render("/public/templates/listar-chats.html", model);
+        });
+/*
+        app.before("/chat/:id", ctx -> {
+            Usuario usuario = ctx.sessionAttribute("username");
+            if (usuario == null) {
+                ctx.redirect("/user/login");
+            }
+        });
+*/
+        app.get("/chat/{id}", ctx -> {
+            Usuario usuario = ctx.sessionAttribute("username");
+            int id = Integer.parseInt(ctx.pathParam("id"));
+            Chat chat = ChatServices.getInstance().getChat(id);
+            if (!usuario.getUsername().equalsIgnoreCase(chat.getUsuario())) {
+                chat.setDestinatario(usuario.getUsername());
+            }
+            Map<String, Object> model = new HashMap<>();
+            model.put("chat", chat);
+            ctx.render("/public/templates/chat.html", model);
         });
 
-        /**
-         * Filtro para activarse antes de la llamadas al contexto.
-         */
-        app.wsBefore("/mensajeServidor", wsHandler -> {
-            System.out.println("Filtro para WS antes de la llamada ws");
-            //ejecutar cualquier evento antes...
+        app.post("/chat/crear", ctx -> {
+            String usuario = ctx.formParam("usuario");
+            Chat chat = new Chat(ChatServices.getId(), usuario, "");
+            ChatServices.getInstance().addChat(chat);
+            ctx.redirect("/chat/" + chat.getId());
         });
 
-        /**
-         * Definición del WS en Javalin en contexto
-         */
-        app.ws("/mensajeServidor", ws -> {
-            System.out.println("Se APLICA EN EL CHAT");
-
+        app.ws("/chat/{id}", ws -> {
             ws.onConnect(ctx -> {
-                Usuario usuario = ctx.sessionAttribute("username");
-                if (usuario != null) {
-                    System.out.println("Conexión Iniciada - "+usuario.getUsername());
+                conectedUsers.add(ctx.session);
+                List<Mensaje> mensajes = ChatServices.getInstance().getChat(Integer.parseInt(ctx.pathParam("id"))).getMensajes();
+                for (Mensaje m : mensajes) {
+                    ctx.session.getRemote().sendString(m.getUsuario() + ": " + m.getMensaje());
                 }
-                System.out.println("Conexión Iniciada - "+ctx.getSessionId());
-                usuariosConectados.add(ctx.session);
             });
 
-//            ws.onMessage(ctx -> {
-//                //Puedo leer los header, parametros entre otros.
-//                ctx.headerMap();
-//                ctx.pathParamMap();
-//                ctx.queryParamMap();
-//                //
-//                System.out.println("Mensaje Recibido de "+ctx.getSessionId()+" ====== ");
-//                System.out.println("Mensaje: "+ctx.message());
-//                System.out.println("================================");
-//                //
-//                enviarMensajeAClientesConectados(ctx.message(), ctx.sessionAttribute("username"));
-//            });
-//
-//            ws.onBinaryMessage(ctx -> {
-//                System.out.println("Mensaje Recibido Binario "+ctx.getSessionId()+" ====== ");
-//                System.out.println("Mensaje: "+ctx.data().length);
-//                System.out.println("================================");
-//            });
+            ws.onMessage(ctx -> {
+                Usuario usuario = ctx.sessionAttribute("username");
+                String mensaje = ctx.message();
+                Mensaje m = new Mensaje(usuario.getUsername(), mensaje);
+                ChatServices.getInstance().getChat(Integer.parseInt(ctx.pathParam("id"))).getMensajes().add(m);
+                for (Session s : conectedUsers) {
+                    s.getRemote().sendString(m.getUsuario() + ": " + m.getMensaje());
+                }
+            });
+
+            ws.onBinaryMessage(ctx -> {
+                System.out.println("Jorgen von Strangle");
+            });
 
             ws.onClose(ctx -> {
-                Usuario usuario = ctx.sessionAttribute("username");
-                if (usuario != null) {
-                    System.out.println("Conexión Cerrada -- "+usuario.getUsername());
-                }
-                System.out.println("Conexión Cerrada - "+ctx.getSessionId());
-                usuariosConectados.remove(ctx.session);
+                conectedUsers.remove(ctx.session);
             });
 
             ws.onError(ctx -> {
-                System.out.println("Ocurrió un error en el WS");
+                System.out.println("Error en WS");
             });
         });
-
-        /**
-         * Filtro para activarse despues de la llamadas al contexto.
-         */
-        app.wsAfter("/mensajeServidor", wsHandler -> {
-            System.out.println("Se APLICA EN EL CHAT");
-            System.out.println("Filtro para WS despues de la llamada al WS");
-            //ejecutar cualquier evento antes...
-        });
-
     }
-    public static void enviarMensajeAClientesConectados(String mensaje, Usuario remitente) {
-        for (Session sesionConectada : usuariosConectados) {
-//            try {
-//                sesionConectada.getRemote().sendString(p(mensaje).withClass(remitente.getUsername()).render());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-        }
-    }
-
-
-
-
-//==============================================================================
 }

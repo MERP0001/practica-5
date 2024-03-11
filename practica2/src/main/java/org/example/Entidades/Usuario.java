@@ -12,7 +12,7 @@ public class Usuario implements Serializable {
     private String password;
     boolean administrator;
     boolean autor;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "foto_id", referencedColumnName = "id")
     private Foto foto;
 

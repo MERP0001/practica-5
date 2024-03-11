@@ -34,7 +34,7 @@ public class ArticleController extends BaseController{
 
             model.put("titulo", "Crear");
             model.put("etiquetas", etiquetas);
-            ctx.render("/templates/crear-articulo.html", model);
+            ctx.render("/public/templates/crear-articulo.html", model);
         });
 
         app.post("/articulo/crear", ctx -> {
@@ -77,7 +77,7 @@ public class ArticleController extends BaseController{
             Map<String, Object> model = new HashMap<>();
             model.put("articulo", articulo);
             model.put("listaComentarios", listaComents);
-            ctx.render("/templates/mostrar-articulo.html", model);
+            ctx.render("/public/templates/mostrar-articulo.html", model);
         });
 
         app.post("/articulo/comentar", ctx -> {
@@ -119,7 +119,7 @@ public class ArticleController extends BaseController{
             }
             model.put("titulo", "Lista de Articulos del Usuario");
             model.put("articulos", articulosUser);
-            ctx.render("/templates/lista-articulo-user.html", model);
+            ctx.render("/public/templates/lista-articulo-user.html", model);
         });
 
         app.before("/articulo/editar/{id}", ctx -> {
@@ -137,7 +137,7 @@ public class ArticleController extends BaseController{
             model.put("titulo", "Editar Articulo");
             model.put("articulo", articulo);
             model.put("etiquetas", etiquetas);
-            ctx.render("/templates/modificar-articulo.html", model);
+            ctx.render("/public/templates/modificar-articulo.html", model);
         });
 
         app.post("articulo/editar", ctx -> {

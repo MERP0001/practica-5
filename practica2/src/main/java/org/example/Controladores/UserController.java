@@ -9,6 +9,11 @@ import org.example.Servicios.FotoServices;
 import org.example.Servicios.UserServices;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class UserController extends BaseController{
@@ -28,7 +33,7 @@ public class UserController extends BaseController{
             Map<String, Object> model = new HashMap<>();
 
             model.put("titulo", "Registrar");
-            ctx.render("/templates/register.html", model);
+            ctx.render("/public/templates/register.html", model);
         });
 
         app.post("/user/register", ctx -> {
@@ -38,7 +43,7 @@ public class UserController extends BaseController{
 
             Usuario existingUser = UserServices.getInstance().find(user);
             if (existingUser != null) {
-                ctx.render("/templates/register.html", Map.of("error", "El nombre de usuario ya existe"));
+                ctx.render("/public/templates/register.html", Map.of("error", "El nombre de usuario ya existe"));
             }
             else{
                 Usuario temp = new Usuario(user, name, pass, false, true);
@@ -52,7 +57,7 @@ public class UserController extends BaseController{
             Map<String, Object> model = new HashMap<>();
 
             model.put("titulo", "Log in");
-            ctx.render("/templates/login.html", model);
+            ctx.render("/public/templates/login.html", model);
         });
 
         app.post("/user/login", ctx -> {
@@ -66,15 +71,27 @@ public class UserController extends BaseController{
                         ctx.cookie("rememberedUser", aux.getUsername(),600);
                     }
                     ctx.sessionAttribute("username", aux);
+                    try {
+                        Class.forName("org.postgresql.Driver");
+                        String dbUrl = System.getenv("JDBC_DATABASE_URL");
+                        Connection connection = DriverManager.getConnection(dbUrl);
+                        String sql = "INSERT INTO user_authentications (username, authentication_time) VALUES (?, ?)";
+                        PreparedStatement statement = connection.prepareStatement(sql);
+                        statement.setString(1, aux.getUsername());
+                        statement.setObject(2, LocalDateTime.now());
+                        statement.executeUpdate();
+                    } catch (ClassNotFoundException | SQLException e) {
+                        e.printStackTrace();
+                    }
                     ctx.redirect("/1");
                 }
 
                 else{
-                    ctx.render("/templates/login.html", Map.of("error", "Usuario o contraseña incorrectos"));
+                    ctx.render("/public/templates/login.html", Map.of("error", "Usuario o contraseña incorrectos"));
                 }
             }
             else{
-                ctx.render("/templates/login.html", Map.of("error", "Usuario no existe"));
+                ctx.render("/public/templates/login.html", Map.of("error", "Usuario no existe"));
             }
         });
 
@@ -90,7 +107,7 @@ public class UserController extends BaseController{
             List<Usuario> usuarios = UserServices.getInstance().findAll(page, 5);
             int totalUsers = UserServices.getInstance().findAll().size();
             int totalPages = (int) Math.ceil((double) totalUsers / 5);
-            ctx.render("/templates/user-list.html", Map.of("usuarios", usuarios, "totalPages", totalPages, "currentPage", page));
+            ctx.render("/public/templates/user-list.html", Map.of("usuarios", usuarios, "totalPages", totalPages, "currentPage", page));
         });
 
         app.before("/user/crear", ctx -> {
@@ -104,7 +121,7 @@ public class UserController extends BaseController{
             Map<String, Object> model = new HashMap<>();
 
             model.put("titulo", "Crear");
-            ctx.render("/templates/create-user.html", model);
+            ctx.render("/public/templates/create-user.html", model);
         });
 
         app.post("/user/crear", ctx -> {
@@ -116,7 +133,7 @@ public class UserController extends BaseController{
 
             Usuario existingUser = UserServices.getInstance().find(user);
             if (existingUser != null) {
-                ctx.render("/templates/register.html", Map.of("error", "El nombre de usuario ya existe"));
+                ctx.render("/public/templates/register.html", Map.of("error", "El nombre de usuario ya existe"));
             } else {
                 Foto foto = null;
                 if (ctx.uploadedFile("foto") != null) {
@@ -153,7 +170,7 @@ public class UserController extends BaseController{
                 Map<String, Object> model = new HashMap<>();
                 model.put("usuario", usuario);
                 model.put("titulo", "Editar");
-                ctx.render("/templates/modificar-usuario.html", model);
+                ctx.render("/public/templates/modificar-usuario.html", model);
             }
         });
 
@@ -192,7 +209,7 @@ public class UserController extends BaseController{
             Map<String, Object> model = new HashMap<>();
 
             model.put("titulo", "Cerrar Sesion");
-            ctx.render("/templates/cerrar-sesion.html", model);
+            ctx.render("/public/templates/cerrar-sesion.html", model);
         });
 
         app.post("/user/close", ctx -> {
