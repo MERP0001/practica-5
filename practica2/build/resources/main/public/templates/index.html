@@ -22,11 +22,29 @@
             align-items: center;
             flex-direction: column;
         }
+
+        @media (max-width: 576px) {
+            h1, h3, p {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 577px) and (max-width: 768px) {
+            h1, h3, p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            h1, h3, p {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>
 <header>
-    <a href="/public"><h1 class="text-center" style="background-color: #007BFF; color: white; margin-bottom: 0">Blog</h1></a>
+    <a href="/"><h1 class="text-center" style="background-color: #007BFF; color: white; margin-bottom: 0">Blog</h1></a>
     <nav class="navbar navbar-expand navbar-primary navbar-dark align-items-center">
         <ul class="navbar-nav">
             <li class="nav-item">
@@ -61,8 +79,8 @@
     </nav>
 </header>
 <div class="row">
-    <div class="col-md-8">
-        <section class="d-flex flex-column justify-content-center align-items-center gap-4">
+    <div class="col-12 col-md-8">
+        <section id="articles-section" class="d-flex flex-column justify-content-center align-items-center gap-4">
             <article th:each="articulo : ${articulos}">
                 <div class="col-md-3">
                     <div class="card" style="width: 48rem; margin: 20px auto;">
@@ -81,7 +99,7 @@
             </article>
         </section>
     </div>
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <section class="d-flex flex-column justify-content-center align-items-center gap-4">
             <div class="card" style="width: 17rem; margin: 20px auto;">
                 <div class="card-header">
@@ -89,7 +107,7 @@
                 </div>
                 <div class="card-body">
                     <ul th:each="etiqueta : ${etiquetas}">
-                        <a th:href="@{'/' + ${etiqueta.etiqueta} + '/1'}">
+                        <a th:href="@{'/tag?page=1&tag=' + ${etiqueta.etiqueta}}">
                             <li th:text="${etiqueta.etiqueta}"></li>
                         </a>
                     </ul>
@@ -108,11 +126,33 @@
     </div>
 </div>
 <div class="pagination">
-    <a class="previous-page"  href="#" th:if="${currentPage > 1}" th:href="@{/{page}(page=${currentPage - 1})}">Previous</a>
+    <a class="previous-page"  href="#" th:if="${currentPage > 1}" th:href="@{'?page=' + (${currentPage - 1})}" th:data-page="${currentPage - 1}">Previous</a>
     <span th:each="page : ${#numbers.sequence(1, totalPages)}">
-        <a href="#" th:href="@{/{page}(page=${page})}" th:text="${page}"></a>
+        <a href="#" th:href="@{'?page=' + ${page}}" th:text="${page}" th:data-page="${page}"></a>
     </span>
-    <a id="next-page" href="#" th:if="${currentPage < totalPages}">Next</a>
+    <a id="next-page" href="#" th:if="${currentPage < totalPages}" th:href="@{'?page=' + (${currentPage + 1})}" th:data-page="${currentPage + 1}">Next</a>
 </div>
+<script src="../js/jquery-3.2.1.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.pagination a').on('click', function(event) {
+            event.preventDefault();
+
+            var page = $(this).attr('data-page');
+
+            $.ajax({
+                url: '/',
+                type: 'GET',
+                data: { page: page },
+                success: function(response) {
+                    $('#articles-section').html($(response).find('#articles-section').html());
+                },
+                error: function(error) {
+                    alert('Hubo un error al obtener los artículos');
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

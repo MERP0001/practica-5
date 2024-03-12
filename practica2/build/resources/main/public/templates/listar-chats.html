@@ -15,8 +15,7 @@
           <div class="d-flex justify-content-between">
             <div>
               <h5 th:text="${chat.usuario}"></h5>
-              <p th:if="${chat.mensajes.size() > 0}" th:text="${chat.mensajes.get(chat.mensajes.size() - 1).usuario + ': ' + chat.mensajes.get(chat.mensajes.size() - 1).mensaje}"></p>
-            </div>
+              <p th:if="${chat.mensajes != null and chat.mensajes.size() > 0}" th:text="${chat.mensajes.get(chat.mensajes.size() - 1).usuario + ': ' + chat.mensajes.get(chat.mensajes.size() - 1).mensaje}"></p>            </div>
             <div>
               <a th:href="@{/chat/{id}(id=${chat.id})}" class="btn btn-primary">Ir al chat</a>
             </div>
