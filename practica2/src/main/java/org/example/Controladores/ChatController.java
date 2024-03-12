@@ -9,17 +9,15 @@ import org.example.Entidades.Mensaje;
 import org.example.Entidades.Usuario;
 import org.example.Servicios.ChatServices;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ChatController extends BaseController{
 
-    private final List<Session> conectedUsers;
-
-    public ChatController(Javalin app, List<Session> conectedUsers) {
+    public ChatController(Javalin app) {
         super(app);
-        this.conectedUsers = conectedUsers;
         registerTemplates();
     }
 
@@ -55,9 +53,6 @@ public class ChatController extends BaseController{
             Usuario usuario = ctx.sessionAttribute("username");
             int id = Integer.parseInt(ctx.pathParam("id"));
             Chat chat = ChatServices.getInstance().getChat(id);
-            if (!usuario.getUsername().equalsIgnoreCase(chat.getUsuario())) {
-                chat.setDestinatario(usuario.getUsername());
-            }
             Map<String, Object> model = new HashMap<>();
             model.put("chat", chat);
             ctx.render("/public/templates/chat.html", model);
@@ -72,7 +67,9 @@ public class ChatController extends BaseController{
 
         app.ws("/chat/{id}", ws -> {
             ws.onConnect(ctx -> {
-                conectedUsers.add(ctx.session);
+                Chat chat = ChatServices.getInstance().getChat(Integer.parseInt(ctx.pathParam("id")));
+                chat.getConectedUsers().add(ctx.session);
+                System.out.println("Conectado");
                 List<Mensaje> mensajes = ChatServices.getInstance().getChat(Integer.parseInt(ctx.pathParam("id"))).getMensajes();
                 for (Mensaje m : mensajes) {
                     ctx.session.getRemote().sendString(m.getUsuario() + ": " + m.getMensaje());
@@ -80,13 +77,25 @@ public class ChatController extends BaseController{
             });
 
             ws.onMessage(ctx -> {
-                Usuario usuario = ctx.sessionAttribute("username");
+                Chat chat = ChatServices.getInstance().getChat(Integer.parseInt(ctx.pathParam("id")));
+                Mensaje m = null;
                 String mensaje = ctx.message();
-                Mensaje m = new Mensaje(usuario.getUsername(), mensaje);
-                ChatServices.getInstance().getChat(Integer.parseInt(ctx.pathParam("id"))).getMensajes().add(m);
-                for (Session s : conectedUsers) {
-                    s.getRemote().sendString(m.getUsuario() + ": " + m.getMensaje());
+                if(ctx.sessionAttribute("username") != null){
+                    Usuario usuario = ctx.sessionAttribute("username");
+                    m = new Mensaje(usuario.getUsername(), mensaje);
                 }
+                else {
+                    m = new Mensaje(chat.getUsuario(), mensaje);
+                }
+                chat.getMensajes().add(m);
+                Mensaje finalM = m;
+                chat.getConectedUsers().forEach(s -> {
+                    try {
+                        s.getRemote().sendString(finalM.getUsuario() + ": " + finalM.getMensaje());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             });
 
             ws.onBinaryMessage(ctx -> {
@@ -94,7 +103,8 @@ public class ChatController extends BaseController{
             });
 
             ws.onClose(ctx -> {
-                conectedUsers.remove(ctx.session);
+                Chat chat = ChatServices.getInstance().getChat(Integer.parseInt(ctx.pathParam("id")));
+                chat.getConectedUsers().remove(ctx.session);
             });
 
             ws.onError(ctx -> {

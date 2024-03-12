@@ -41,8 +41,8 @@ public class ArticleServices extends DataBaseServices<Articulo>{
         EntityManager em = getEntityManager();
         try{
             TypedQuery<Articulo> query = em.createQuery("SELECT a FROM Articulo a ORDER BY a.fecha DESC", Articulo.class);
-            //query.setFirstResult((pageNumber - 1) * pageSize);
-            //query.setMaxResults(pageSize);
+            query.setFirstResult((pageNumber - 1) * pageSize);
+            query.setMaxResults(pageSize);
             var lista = query.getResultList();
             for(Articulo a : lista){
                 a.getListaEtiquetas().size();

@@ -24,7 +24,6 @@ public class Main {
         if (UserServices.getInstance().find("admin") == null) {
             UserServices.getInstance().create(new Usuario("admin", "admin", "admin", true, false));
         }
-        List<Session> conectedUsers = new ArrayList<>();
 
         Javalin app = Javalin.create(javalinConfig -> javalinConfig.staticFiles.add(staticFileConfig -> {
             staticFileConfig.hostedPath = "/";
@@ -37,6 +36,6 @@ public class Main {
         new UserController(app).aplicarRutas();
         new ArticleController(app).aplicarRutas();
         new HomeController(app).aplicarRutas();
-        new ChatController(app, conectedUsers).aplicarRutas();
+        new ChatController(app).aplicarRutas();
     }
 }

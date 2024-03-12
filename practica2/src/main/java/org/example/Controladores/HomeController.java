@@ -31,11 +31,11 @@ public class HomeController extends BaseController{
                 Usuario aux = UserServices.getInstance().find(ctx.cookie("rememberedUser"));
                 ctx.sessionAttribute("username", aux);
             }
-            ctx.redirect("/1");
         });
 
-        app.get("/{page}", ctx -> {
-            int page = Integer.parseInt(ctx.pathParam("page"));
+        app.get("/", ctx -> {
+            String pageParam = ctx.queryParam("page");
+            int page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
             List<Articulo> articulos = ArticleServices.getInstance().findAllRecentPag(page, 5);
             List<Etiqueta> etiquetas = EtiquetaServices.getInstance().findAll();
             int totalArticles = ArticleServices.getInstance().findAll().size();
@@ -49,9 +49,10 @@ public class HomeController extends BaseController{
             ctx.render("/public/templates/index.html", model);
         });
 
-        app.get("/{tag}/{page}", ctx -> {
-            int page = Integer.parseInt(ctx.pathParam("page"));
-            String tag = ctx.pathParam("tag");
+        app.get("/tag", ctx -> {
+            String pageParam = ctx.queryParam("page");
+            int page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
+            String tag = ctx.queryParam("tag");
             List<Articulo> articulos = ArticleServices.getInstance().findAllByTagPag(tag, page, 5);
             List<Etiqueta> etiquetas = EtiquetaServices.getInstance().findAll();
             int totalArticles = ArticleServices.getInstance().findAllByTag(tag).size();

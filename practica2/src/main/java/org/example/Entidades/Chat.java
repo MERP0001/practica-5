@@ -1,5 +1,7 @@
 package org.example.Entidades;
 
+import org.eclipse.jetty.websocket.api.Session;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,11 +10,13 @@ public class Chat {
     private String usuario;
     private String destinatario;
     private List<Mensaje> mensajes;
+    private final List<Session> conectedUsers;
 
     public Chat(int id, String usuario, String destinatario) {
         this.id = id;
         this.usuario = usuario;
         this.destinatario = destinatario;
+        this.conectedUsers = new ArrayList<>();
         this.mensajes = new ArrayList<>();
     }
 
@@ -46,5 +50,13 @@ public class Chat {
 
     public void setMensajes(List<Mensaje> mensajes) {
         this.mensajes = mensajes;
+    }
+
+    public void addMensaje(Mensaje mensaje){
+        mensajes.add(mensaje);
+    }
+
+    public List<Session> getConectedUsers(){
+        return conectedUsers;
     }
 }

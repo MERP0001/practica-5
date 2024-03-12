@@ -83,7 +83,7 @@ public class UserController extends BaseController{
                     } catch (ClassNotFoundException | SQLException e) {
                         e.printStackTrace();
                     }
-                    ctx.redirect("/1");
+                    ctx.redirect("/");
                 }
 
                 else{
